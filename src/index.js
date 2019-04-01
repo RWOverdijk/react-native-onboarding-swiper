@@ -22,7 +22,7 @@ import DoneButton from './buttons/DoneButton';
 // hotfix: https://github.com/facebook/react-native/issues/16710
 const itemVisibleHotfix = { itemVisiblePercentThreshold: 100 };
 
-class Onboarding extends Component {
+export class Onboarding extends Component {
   constructor() {
     super();
 
@@ -48,7 +48,7 @@ class Onboarding extends Component {
 
     this.setState(state => {
       this.props.pageIndexCallback &&
-      this.props.pageIndexCallback(viewableItems[0].index);
+        this.props.pageIndexCallback(viewableItems[0].index);
       return {
         previousPage: state.currentPage,
         currentPage: viewableItems[0].index,
@@ -72,6 +72,10 @@ class Onboarding extends Component {
   keyExtractor = (item, index) => index.toString();
 
   renderItem = ({ item }) => {
+    if (React.isValidElement(item)) {
+      return item;
+    }
+
     const { image, title, subtitle, backgroundColor } = item;
     const isLight = tinycolor(backgroundColor).getBrightness() > 180;
     const {
@@ -130,7 +134,7 @@ class Onboarding extends Component {
       skipToPage,
     } = this.props;
     const currentPage = pages[this.state.currentPage];
-    const currentBackgroundColor = currentPage.backgroundColor;
+    const currentBackgroundColor = currentPage.backgroundColor || 'transparent';
     const isLight = tinycolor(currentBackgroundColor).getBrightness() > 180;
     const barStyle = isLight ? 'dark-content' : 'light-content';
     const bottomBarHighlight =
@@ -139,7 +143,10 @@ class Onboarding extends Component {
         : this.props.bottomBarHighlight;
 
     let backgroundColor = currentBackgroundColor;
-    if (this.state.previousPage !== null && pages[this.state.previousPage] !== undefined) {
+    if (
+      this.state.previousPage !== null &&
+      pages[this.state.previousPage] !== undefined
+    ) {
       const previousBackgroundColor =
         pages[this.state.previousPage].backgroundColor;
       backgroundColor = this.state.backgroundColorAnim.interpolate({
@@ -157,11 +164,11 @@ class Onboarding extends Component {
     const skipFun =
       skipToPage != null
         ? () => {
-          this.flatList.scrollToIndex({
-            animated: true,
-            index: skipToPage,
-          });
-        }
+            this.flatList.scrollToIndex({
+              animated: true,
+              index: skipToPage,
+            });
+          }
         : onSkip;
 
     return (
@@ -188,7 +195,7 @@ class Onboarding extends Component {
           }
           {...flatlistProps}
         />
-        {showPagination &&
+        {showPagination && (
           <SafeAreaView style={bottomBarHighlight ? styles.overlay : {}}>
             <Pagination
               isLight={isLight}
@@ -211,25 +218,29 @@ class Onboarding extends Component {
               DotComponent={DotComponent}
             />
           </SafeAreaView>
-        }
+        )}
       </Animated.View>
     );
   }
 }
 
 Onboarding.propTypes = {
+  flatlistProps: FlatList.propTypes,
   pages: PropTypes.arrayOf(
-    PropTypes.shape({
-      backgroundColor: PropTypes.string.isRequired,
-      image: PropTypes.element.isRequired,
-      title: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.element,
-        PropTypes.func,
-      ]).isRequired,
-      subtitle: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
-        .isRequired,
-    })
+    PropTypes.oneOfType([
+      PropTypes.element,
+      PropTypes.shape({
+        backgroundColor: PropTypes.string.isRequired,
+        image: PropTypes.element,
+        title: PropTypes.oneOfType([
+          PropTypes.string,
+          PropTypes.element,
+          PropTypes.func,
+        ]).isRequired,
+        subtitle: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
+          .isRequired,
+      }),
+    ])
   ).isRequired,
   bottomBarHighlight: PropTypes.bool,
   bottomBarHeight: PropTypes.number,
@@ -258,6 +269,7 @@ Onboarding.propTypes = {
 };
 
 Onboarding.defaultProps = {
+  flatlistProps: {},
   bottomBarHighlight: true,
   bottomBarHeight: 60,
   controlStatusBar: true,
@@ -289,5 +301,7 @@ const styles = {
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
 };
+
+export { Page };
 
 export default Onboarding;
