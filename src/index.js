@@ -225,7 +225,7 @@ export class Onboarding extends Component {
 }
 
 Onboarding.propTypes = {
-  flatlistProps: FlatList.propTypes,
+  flatlistProps: PropTypes.shape(FlatList.propTypes),
   pages: PropTypes.arrayOf(
     PropTypes.oneOfType([
       PropTypes.element,
